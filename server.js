@@ -1,11 +1,10 @@
-var express = require('express');
-var fs      = require('fs');
-var request = require('request');
-var cheerio = require('cheerio');
-var app     = express();
+var express = require('express')
+var fs = require('fs')
+var request = require('request')
+var cheerio = require('cheerio')
+var app = express()
 
-app.get('/scrape', function(req, res){
-
+app.get('/scrape', function (req, res) {
   /**
   *  Main page
   * 1. https://www.mtggoldfish.com/metagame/pauper/full#paper
@@ -46,61 +45,78 @@ sideboard
   *  - isCombo
   **/
 
-  url = 'https://www.mtggoldfish.com/metagame/pauper/full#paper';
+  var getDecklist = function (link, cb) {
+    request(link, function (error, response, html) {
+      if (!error) {
+        var $ = cheerio.load(html)
+        var decklist, title, meta
+        $('#deck_input_deck').filter(function () {
+          var deck = $(this)
+          decklist = deck.attr('value')
+        })
+        $('.deck-view-title').filter(function () {
+          var data = $(this)
+          title = data.first().text().split('Suggest')[0].trim()
+        })
+        $('.deck-view-title-bar').next().filter(function () {
+          var data = $(this)
+          meta = data.text().trim()
+        })
+        cb(link, meta, title, decklist)
+      }
+    })
+  }
 
-  request(url, function(error, response, html){
-    if(!error){
-      var $ = cheerio.load(html);
+  function uuid () {
+    var uuid = ''
+    var i
+    var random
+    for (i = 0; i < 32; i++) {
+      random = Math.random() * 16 | 0
 
-      var title, link, decklist, meta;
-      var json = {};
-
-      var links = [];
-      var metas = []; 
-      var counter = 0;
-
-      $('.archetype-tile').filter(function(){
-        var data = $(this);
-        link = 'https://www.mtggoldfish.com/archetype/' + data.attr('id');
-	links.push(link);
-      })
-
-      $('.percentage').filter(function(){
-        var data = $(this);
-        meta = data.text().trim();
-        metas.push(meta);
-      })
-
-      /**	
-      $('.deck-view-title').filter(function(){
-        var data = $(this);
-        title = data.text().trim();
-
-        json.title = rating;
-      }) 
-      **/
-
+      if (i === 8 || i === 12 || i === 16 || i === 20) {
+        uuid += '-'
+      }
+      uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16)
     }
-    var decks = []
-    links.forEach(function (item, index) {
-       var deck = { title : "", link : "", decklist : "", meta: ""};
-       deck.link = item;
-       deck.meta = metas[index];
-       decks.push(deck);
-    }); 
+    return uuid
+  }
 
-    json['decks'] = decks; 
-    fs.writeFile('output.json', JSON.stringify(json, null, 4), function(err){
-      console.log('File successfully written! - Check your project directory for the output.json file');
-    }) 
+  var cb = function (link, meta, title, decklist) {
+    var deck = { title: '', link: '', decklist: '', meta: '' }
+    deck.link = link
+    deck.title = title
+    deck.decklist = decklist
+    deck.meta = meta
+    // var todaysDate = new Date().toJSON().split('T')[0] + '/'
+    var filename = 'decks/' + title + '-' + uuid() + '.json'
 
-    //res.send('Done!')
+    fs.writeFile(filename, JSON.stringify(deck, null, 4), function (err) {
+      // console.log('File successfully written!')
+    })
+    console.log('Files successfully written!')
+  }
+
+  var url = 'https://www.mtggoldfish.com/metagame/pauper/full#paper'
+
+  request(url, function (error, response, html) {
+    if (!error) {
+      var $ = cheerio.load(html)
+
+      $('.archetype-tile').filter(function () {
+        var data = $(this)
+        var link = 'https://www.mtggoldfish.com/archetype/' + data.attr('id')
+        getDecklist(link, cb)
+      })
+    }
+
+    res.send('Done!')
   })
-  
-  res.send('Done!')
-});
+
+  // res.send('Scraping Pauper Meta done...')
+})
 
 app.listen('8081')
-console.log('Magic happens on port 8081');
-exports = module.exports = app;
+console.log('Magic happens on port 8081')
+exports = module.exports = app
 
