@@ -10,28 +10,6 @@ app.get('/scrape', function (req, res) {
   * 1. https://www.mtggoldfish.com/metagame/pauper/full#paper
   * 2. Scrape links to all decks and add meta % + decks
   * 3. Go into each deck link: https://www.mtggoldfish.com/archetype/pauper-stompy-22958#paper
-
-<input type="hidden" name="deck_input[deck]" id="deck_input_deck" value="4 Burning-Tree Emissary
-4 Nest Invader
-4 Nettle Sentinel
-3 Quirion Ranger
-3 Silhana Ledgewalker
-4 Skarrgan Pit-Skulk
-2 Vault Skirge
-3 Young Wolf
-4 Hunger of the Howlpack
-4 Vines of Vastwood
-4 Elephant Guide
-4 Rancor
-17 Forest
-sideboard
-4 Epic Confrontation
-4 Gleeful Sabotage
-2 Scattershot Archer
-2 Serene Heart
-3 Viridian Longbow
-" />
-
   * 4. For each line do request to scryfall
   *    https://api.scryfall.com/cards/named?exact=hunger+of+the+howlpack
   *  a) color- colors []
@@ -88,13 +66,15 @@ sideboard
     deck.title = title
     deck.decklist = decklist
     deck.meta = meta
-    // var todaysDate = new Date().toJSON().split('T')[0] + '/'
-    var filename = 'decks/' + title + '-' + uuid() + '.json'
+    var todaysDate = new Date().toJSON().split('T')[0]
+    var filename = 'decks/' + todaysDate + '-' + title + '-' + uuid() + '.json'
 
     fs.writeFile(filename, JSON.stringify(deck, null, 4), function (err) {
-      // console.log('File successfully written!')
+      if (err) {
+        console.log('Error: ' + err)
+      }
+      console.log(filename + ' successfully written!')
     })
-    console.log('Files successfully written!')
   }
 
   var url = 'https://www.mtggoldfish.com/metagame/pauper/full#paper'
@@ -114,6 +94,39 @@ sideboard
   })
 
   // res.send('Scraping Pauper Meta done...')
+})
+
+app.get('/analyse', function (req, res) {
+  /**
+   * Read and parse deck files
+   */
+  var fs = require('fs')
+  var obj
+  fs.readFile('decks/2017-11-27-WUR-65c764e3-df94-447e-8a97-21b3c6b8480f.json', 'utf8', function (err, data) {
+    if (err) throw err
+    obj = JSON.parse(data)
+    console.log(obj)
+    var multiplier = obj.meta.split(' Decks')[0]
+    var card = { title: '', amount: '', multiplier: '', types: '', color: '', function: '', power: '', toughnes: '' }
+    card.multiplier = multiplier
+    var maindeck = obj.decklist.split('sideboard')[0]
+    // var sideboard = obj.decklist.split('sideboard')[1]
+    var main = maindeck.split('\n')
+    console.log(main)
+    var html = '<h2>Analysing decks</h2>'
+    main.forEach(element => {
+      var name = element.substring(2, element.length)
+      var amount = element.substring(0, 1)
+      card.amount = amount
+      card.title = name
+      console.log(card)
+      if (card.title !== '') {
+        html += '<pre>' + JSON.stringify(card) + '</pre>'
+      }
+    })
+
+    res.send(html)
+  })
 })
 
 app.listen('8081')
