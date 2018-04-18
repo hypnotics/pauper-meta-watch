@@ -107,7 +107,7 @@ app.get('/analyse', function (req, res) {
     obj = JSON.parse(data)
     console.log(obj)
     var multiplier = obj.meta.split(' Decks')[0]
-    var card = { title: '', amount: '', multiplier: '', types: '', color: '', function: '', power: '', toughnes: '' }
+    var card = { title: '', amount: '', multiplier: '', types: '', color: '', function: '', power: '', toughness: '' }
     card.multiplier = multiplier
     var maindeck = obj.decklist.split('sideboard')[0]
     // var sideboard = obj.decklist.split('sideboard')[1]
