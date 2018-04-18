@@ -1,5 +1,35 @@
-{"title":"Archaeomancer","cmc":4,"mana_cost":"{2}{U}{U}","power":"1","toughness":"2","colors":"U","oracle_text":"When Archaeomancer enters the battlefield, return target instant or sorcery card from your graveyard to your hand."}
-{"title":"Carapace Forger","cmc":2,"mana_cost":"{1}{G}","power":"2","toughness":"2","colors":"G","oracle_text":"Metalcraft — Carapace Forger gets +2/+2 as long as you control three or more artifacts."}
-{"title":"Birchlore Rangers","cmc":1,"mana_cost":"{G}","power":"1","toughness":"1","colors":"G","oracle_text":"Tap two untapped Elves you control: Add one mana of any color.\nMorph {G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)"}
-{"title":"Basking Rootwalla","cmc":1,"mana_cost":"{G}","power":"1","toughness":"1","colors":"G","oracle_text":"{1}{G}: Basking Rootwalla gets +2/+2 until end of turn. Activate this ability only once each turn.\nMadness {0} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)"}
-{"title":"Atog","cmc":2,"mana_cost":"{1}{R}","power":"1","toughness":"2","colors":"R","oracle_text":"Sacrifice an artifact: Atog gets +2/+2 until end of turn."}
+{"title":"Hundroog","cmc":7,"mana_cost":"{6}{G}","power":"4","toughness":"7","colors":"G","abillities":["draw"]}
+{"title":"Kjeldoran Guard","cmc":2,"mana_cost":"{1}{W}","power":"1","toughness":"1","colors":"W","abillities":["special"]}
+{"title":"Saprazzan Raider","cmc":3,"mana_cost":"{2}{U}","power":"1","toughness":"2","colors":"U","abillities":["special"]}
+{"title":"Mogg Squad","cmc":2,"mana_cost":"{1}{R}","power":"3","toughness":"3","colors":"R","abillities":["special"]}
+{"title":"Brass Gnat","cmc":1,"mana_cost":"{1}","power":"1","toughness":"1","colors":"","abillities":["flying","special","special"]}
+{"title":"Ur-Drago","cmc":7,"mana_cost":"{3}{U}{U}{B}{B}","power":"4","toughness":"4","colors":"B,U","abillities":["special","special"]}
+{"colors":"c","abillities":[]}
+{"title":"Gosta Dirk","cmc":7,"mana_cost":"{3}{W}{W}{U}{U}","power":"4","toughness":"4","colors":"U,W","abillities":["special","special"]}
+{"title":"Demonic Hordes","cmc":6,"mana_cost":"{3}{B}{B}{B}","power":"5","toughness":"5","colors":"B","abillities":["special","special"]}
+{"title":"Viashino Slasher","cmc":2,"mana_cost":"{1}{R}","power":"1","toughness":"2","colors":"R","abillities":["special"]}
+{"title":"Abbey Matron","cmc":3,"mana_cost":"{2}{W}","power":"1","toughness":"3","colors":"W","abillities":["special"]}
+{"title":"Samite Alchemist","cmc":4,"mana_cost":"{3}{W}","power":"0","toughness":"2","colors":"W","abillities":["special"]}
+{"title":"Caravan Hurda","cmc":5,"mana_cost":"{4}{W}","power":"1","toughness":"5","colors":"W","abillities":["special"]}
+{"title":"Stormwatch Eagle","cmc":4,"mana_cost":"{3}{U}","power":"2","toughness":"1","colors":"U","abillities":["flying","special"]}
+{"title":"Armored Cancrix","cmc":5,"mana_cost":"{4}{U}","power":"2","toughness":"5","colors":"U","abillities":[]}
+{"title":"Leviathan","cmc":9,"mana_cost":"{5}{U}{U}{U}{U}","power":"10","toughness":"10","colors":"U","abillities":["special","special","special","special"]}
+{"title":"Filthy Cur","cmc":2,"mana_cost":"{1}{B}","power":"2","toughness":"2","colors":"B","abillities":["special"]}
+{"title":"Phyrexian Marauder","cmc":0,"mana_cost":"{X}","power":"0","toughness":"0","colors":"","abillities":["special","special","special"]}
+{"title":"Elder Spawn","cmc":7,"mana_cost":"{4}{U}{U}{U}","power":"6","toughness":"6","colors":"U","abillities":["special","special"]}
+{"title":"Deathknell Kami","cmc":2,"mana_cost":"{1}{B}","power":"0","toughness":"1","colors":"B","abillities":["flying","special","special"]}
+{"title":"Jedit's Dragoons","cmc":6,"mana_cost":"{5}{W}","power":"2","toughness":"5","colors":"W","abillities":["special","special"]}
+{"title":"Kitsune Diviner","cmc":1,"mana_cost":"{W}","power":"0","toughness":"1","colors":"W","abillities":["special"]}
+{"title":"Sandsower","cmc":4,"mana_cost":"{3}{W}","power":"1","toughness":"3","colors":"W","abillities":["special"]}
+{"title":"Matopi Golem","cmc":5,"mana_cost":"{5}","power":"3","toughness":"3","colors":"","abillities":["special"]}
+{"title":"Spurred Wolverine","cmc":5,"mana_cost":"{4}{R}","power":"3","toughness":"2","colors":"R","abillities":["special"]}
+{"title":"Sokenzan Bruiser","cmc":5,"mana_cost":"{4}{R}","power":"3","toughness":"3","colors":"R","abillities":["special"]}
+{"title":"Coastal Hornclaw","cmc":5,"mana_cost":"{4}{U}","power":"3","toughness":"3","colors":"U","abillities":["flying"]}
+{"title":"Jedit Ojanen","cmc":7,"mana_cost":"{4}{W}{W}{U}","power":"5","toughness":"5","colors":"U,W","abillities":[]}
+{"title":"Nameless Race","cmc":4,"mana_cost":"{3}{B}","power":"*","toughness":"*","colors":"B","abillities":["special","special","special"]}
+{"title":"Merfolk of the Depths","cmc":6,"mana_cost":"{4}{G/U}{G/U}","power":"4","toughness":"2","colors":"G,U","abillities":["special"]}
+{"title":"Cephalid Snitch","cmc":2,"mana_cost":"{1}{U}","power":"1","toughness":"1","colors":"U","abillities":["protection"]}
+{"title":"Cephalid Aristocrat","cmc":5,"mana_cost":"{4}{U}","power":"3","toughness":"3","colors":"U","abillities":["special"]}
+{"title":"Dwarven Sea Clan","cmc":3,"mana_cost":"{2}{R}","power":"1","toughness":"1","colors":"R","abillities":["special"]}
+{"title":"Akron Legionnaire","cmc":8,"mana_cost":"{6}{W}{W}","power":"8","toughness":"4","colors":"W","abillities":["special"]}
+{"title":"Hill Giant","cmc":4,"mana_cost":"{3}{R}","power":"3","toughness":"3","colors":"R","abillities":[]}

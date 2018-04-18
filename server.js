@@ -134,7 +134,7 @@ app.get('/transform', function (req, res) {
    * Read card lists and extract relevant data for each card
    */
   var fs = require('fs')
-  fs.readFile('data/raw/test.txt', 'utf8', function (err, data) {
+  fs.readFile('data/raw/test-bad.txt', 'utf8', function (err, data) {
     if (err) throw err
     var cardlist = data.split('\n')
 
@@ -185,14 +185,20 @@ app.get('/transform', function (req, res) {
 
           var obj = JSON.parse(html)
 
-          var card = { title: '', cmc: '', mana_cost: '', power: '', toughness: '', colors: '', oracle_text: '' }
+          var card = { title: '', cmc: '', mana_cost: '', power: '', toughness: '', colors: '', abillities: [] }
           card.title = obj.name
           card.cmc = obj.cmc
           card.mana_cost = obj.mana_cost
           card.power = obj.power
           card.toughness = obj.toughness
-          card.colors = obj.colors.join()
-          card.oracle_text = obj.oracle_text
+          if (obj.colors) {
+            card.colors = obj.colors.join()
+          } else {
+            card.colors = 'c'
+          }
+          if (obj.oracle_text) {
+            card.abillities = extractAbillities(obj.oracle_text)
+          }
           console.log(card)
 
           isDone(card)
@@ -215,13 +221,14 @@ app.get('/transform', function (req, res) {
 })
 
 var normalize = function (card) {
-  var normalizedData = []
+  var normalizedData = {}
 
-  var blue = [1.0, 0.0, 0.0, 0.0, 0.0]
-  var green = [0.0, 1.0, 0.0, 0.0, 0.0]
-  var white = [0.0, 0.0, 1.0, 0.0, 0.0]
-  var black = [0.0, 0.0, 0.0, 1.0, 0.0]
-  var red = [0.0, 0.0, 0.0, 0.0, 1.0]
+  var blue = {u: 1.0, g: 0.0, w: 0.0, b: 0.0, r: 0.0, o: 0.0}
+  var green = {u: 0.0, g: 1.0, w: 0.0, b: 0.0, r: 0.0, o: 0.0}
+  var white = {u: 0.0, g: 0.0, w: 1.0, b: 0.0, r: 0.0, o: 0.0}
+  var black = {u: 0.0, g: 0.0, w: 0.0, b: 1.0, r: 0.0, o: 0.0}
+  var red = {u: 0.0, g: 0.0, w: 0.0, b: 0.0, r: 1.0, o: 0.0}
+  var other = {u: 0.0, g: 0.0, w: 0.0, b: 0.0, r: 0.0, o: 1.0}
 
   var colors
   switch (card.colors.toLowerCase()) {
@@ -235,20 +242,63 @@ var normalize = function (card) {
       break
     case 'u': colors = blue
       break
+    default: colors = other
   }
 
-  var power = []
-  power.push(card.power * 0.1)
+  var power = {'power': card.power * 0.1}
 
-  var toughness = []
-  toughness.push(card.toughness * 0.1)
+  var toughness = {'toughness': card.toughness * 0.1}
 
-  var cmc = []
-  cmc.push(card.cmc * 0.1)
+  var cmc = {'cmc': card.cmc * 0.1}
 
-  normalizedData = colors.concat(power).concat(toughness).concat(cmc)
+  var abillites = {'abillities': card.abillities.length * 0.1}
+
+  normalizedData = Object.assign(cmc, colors, power, toughness, abillites)
 
   return normalizedData
+}
+
+var extractAbillities = function (text) {
+  var ruletexts = text.split('\n')
+  var abillities = []
+  ruletexts.forEach(rule => {
+    var abillity = 'special'
+    rule = rule.toLowerCase().trim()
+
+    if (rule.indexOf('flying') !== -1) {
+      abillity = 'flying'
+    }
+    if (rule.indexOf('draw') !== -1) {
+      abillity = 'draw'
+    }
+    if (rule.indexOf('affinity') !== -1) {
+      abillity = 'affinity'
+    }
+    if (rule.indexOf('monarch') !== -1) {
+      abillity = 'monarch'
+    }
+    if (rule.indexOf('haste') !== -1) {
+      abillity = 'haste'
+    }
+    if (rule.indexOf('hexproof') !== -1) {
+      abillity = 'hexproof'
+    }
+    if (rule.indexOf('protection') !== -1) {
+      abillity = 'protection'
+    }
+    if (rule.indexOf('evoke') !== -1) {
+      abillity = 'evoke'
+    }
+    if (rule.indexOf('delve') !== -1) {
+      abillity = 'delve'
+    }
+    if (rule.indexOf('metalcraft') !== -1) {
+      abillity = 'metalcraft'
+    }
+    abillities.push(abillity)
+  })
+
+  return (abillities)
 }
 
 app.get('/normalize', function (req, res) {
@@ -264,7 +314,7 @@ app.get('/normalize', function (req, res) {
       if (row !== '') {
         console.log(row)
         var card = JSON.parse(row)
-        output += '<pre>' + normalize(card) + '</pre>'
+        output += '<pre>' + JSON.stringify(normalize(card)) + '</pre>'
       }
     })
     res.send(output)

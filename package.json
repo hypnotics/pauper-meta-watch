@@ -5,8 +5,9 @@
   "main": "server.js",
   "author": "Elias",
   "dependencies": {
+    "brain.js": "^1.1.2",
+    "cheerio": "latest",
     "express": "latest",
-    "request": "latest",
-    "cheerio": "latest"
+    "request": "latest"
   }
 }
