@@ -129,6 +129,148 @@ app.get('/analyse', function (req, res) {
   })
 })
 
+app.get('/transform', function (req, res) {
+  /**
+   * Read card lists and extract relevant data for each card
+   */
+  var fs = require('fs')
+  fs.readFile('data/raw/test.txt', 'utf8', function (err, data) {
+    if (err) throw err
+    var cardlist = data.split('\n')
+
+    console.log(cardlist)
+
+    var numberOfCards = cardlist.length
+    var cards = []
+
+    var isDone = function (card) {
+      numberOfCards--
+      cards.push(card)
+      if (numberOfCards === 0) {
+        allComplete(cards)
+      }
+    }
+
+    var allComplete = function (cards) {
+      var data = ''
+      var todaysDate = new Date().toJSON().split('T')[0]
+      var filename = 'data/raw/' + todaysDate + '-transformation' + '.json'
+
+      cards.forEach(card => {
+        if (card !== '' && card !== undefined) {
+          data += JSON.stringify(card) + '\n'
+        }
+      })
+      fs.writeFile(filename, data, function (err) {
+        if (err) throw err
+        console.log('finished writing cards')
+      })
+    }
+
+    for (var i = 0; i < cardlist.length; i++) {
+      var baseUrl = 'https://api.scryfall.com/cards/named?exact='
+      var cardUrl = cardlist[i].toLowerCase()
+      if (cardUrl.indexOf(' ') !== -1) {
+        cardUrl = cardUrl.replace(' ', '+')
+      }
+
+      var url = baseUrl + cardUrl
+
+      console.log(url)
+
+      request(url, function (error, response, html) {
+        if (!error) {
+          // console.log('html: ' + html)
+          // console.log('response: ' + response)
+
+          var obj = JSON.parse(html)
+
+          var card = { title: '', cmc: '', mana_cost: '', power: '', toughness: '', colors: '', oracle_text: '' }
+          card.title = obj.name
+          card.cmc = obj.cmc
+          card.mana_cost = obj.mana_cost
+          card.power = obj.power
+          card.toughness = obj.toughness
+          card.colors = obj.colors.join()
+          card.oracle_text = obj.oracle_text
+          console.log(card)
+
+          isDone(card)
+
+          // fs.readFile(filename, 'utf8', function (err, data) {
+          //   if (err) throw err
+          //   data = JSON.stringify(card) + '\n'
+          //   fs.writeFile('data/raw/' + card.title, data, function (err) {
+          //     if (err) throw err
+          //     console.log('complete')
+          //   })
+          // })
+        }
+      })
+    }
+
+    var output = '<h2>Transformation Done</h2>'
+    res.send(output)
+  })
+})
+
+var normalize = function (card) {
+  var normalizedData = []
+
+  var blue = [1.0, 0.0, 0.0, 0.0, 0.0]
+  var green = [0.0, 1.0, 0.0, 0.0, 0.0]
+  var white = [0.0, 0.0, 1.0, 0.0, 0.0]
+  var black = [0.0, 0.0, 0.0, 1.0, 0.0]
+  var red = [0.0, 0.0, 0.0, 0.0, 1.0]
+
+  var colors
+  switch (card.colors.toLowerCase()) {
+    case 'g': colors = green
+      break
+    case 'r': colors = red
+      break
+    case 'b': colors = black
+      break
+    case 'w': colors = white
+      break
+    case 'u': colors = blue
+      break
+  }
+
+  var power = []
+  power.push(card.power * 0.1)
+
+  var toughness = []
+  toughness.push(card.toughness * 0.1)
+
+  var cmc = []
+  cmc.push(card.cmc * 0.1)
+
+  normalizedData = colors.concat(power).concat(toughness).concat(cmc)
+
+  return normalizedData
+}
+
+app.get('/normalize', function (req, res) {
+  /**
+   * Read card json and normalize the data to be read by brain.js
+   */
+  var fs = require('fs')
+  fs.readFile('data/raw/2018-04-18-transformation.json', 'utf8', function (err, data) {
+    if (err) throw err
+    var cardlist = data.split('\n')
+    var output = '<h2>Normalization done</h2>'
+    cardlist.forEach(row => {
+      if (row !== '') {
+        console.log(row)
+        var card = JSON.parse(row)
+        output += '<pre>' + normalize(card) + '</pre>'
+      }
+    })
+    res.send(output)
+  })
+})
+
 app.listen('8081')
 console.log('Magic happens on port 8081')
 exports = module.exports = app
