@@ -1,0 +1,10 @@
+{"title":"Benalish Honor Guard","cmc":2,"mana_cost":"{1}{W}","power":"2","toughness":"2","colors":"W","abillities":["special"]}
+{"title":"Aven Sentry","cmc":4,"mana_cost":"{3}{W}","power":"3","toughness":"2","colors":"W","abillities":["flying"]}
+{"title":"Goblin Warchief","cmc":3,"mana_cost":"{1}{R}{R}","power":"2","toughness":"2","colors":"R","abillities":["special","haste"]}
+{"title":"Mammoth Spider","cmc":5,"mana_cost":"{4}{G}","power":"3","toughness":"5","colors":"G","abillities":["special"]}
+{"title":"Academy Drake","cmc":3,"mana_cost":"{2}{U}","power":"2","toughness":"2","colors":"U","abillities":["special","flying","special"]}
+{"title":"Windgrace Acolyte","cmc":5,"mana_cost":"{4}{B}","power":"3","toughness":"2","colors":"B","abillities":["flying","special"]}
+{"title":"Llanowar Elves","cmc":1,"mana_cost":"{G}","power":"1","toughness":"1","colors":"G","abillities":["special"]}
+{"title":"Artificer's Assistant","cmc":1,"mana_cost":"{U}","power":"1","toughness":"1","colors":"U","abillities":["flying","special"]}
+{"title":"Rat Colony","cmc":2,"mana_cost":"{1}{B}","power":"2","toughness":"1","colors":"B","abillities":["special","special"]}
+{"title":"Fire Elemental","cmc":5,"mana_cost":"{3}{R}{R}","power":"5","toughness":"4","colors":"R","abillities":[]}

@@ -3,6 +3,10 @@ var fs = require('fs')
 var request = require('request')
 var cheerio = require('cheerio')
 var app = express()
+var path = require('path')
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/scrape', function (req, res) {
   /**
@@ -129,93 +133,98 @@ app.get('/analyse', function (req, res) {
   })
 })
 
+var transformScryfallData = function (url, withCallback, req, res) {
+  request(url, function (error, response, html) {
+    if (!error) {
+      // console.log('html: ' + html)
+      // console.log('response: ' + response)
+
+      var obj = JSON.parse(html)
+
+      var card = { title: '', cmc: '', mana_cost: '', power: '', toughness: '', colors: '', abillities: [] }
+      card.title = obj.name
+      card.cmc = obj.cmc
+      card.mana_cost = obj.mana_cost
+      card.power = obj.power
+      card.toughness = obj.toughness
+      if (obj.colors) {
+        card.colors = obj.colors.join()
+      } else {
+        card.colors = 'c'
+      }
+      if (obj.oracle_text) {
+        card.abillities = extractAbillities(obj.oracle_text)
+      }
+      console.log(card)
+      if (withCallback) {
+        isDone(card)
+      } else {
+        var output = '<pre>' + JSON.stringify({ name: req.body.name }) + '</pre>'
+        output += '<pre>' + JSON.stringify(card) + '</pre>'
+        output += '<pre>' + JSON.stringify(normalize(card)) + '</pre>'
+        res.send(output)
+      }
+    }
+  })
+}
+
+var numberOfCards = 0
+var cards = []
+
+var setNumberOfCards = function (val) {
+  numberOfCards = val
+}
+
+var isDone = function (card) {
+  numberOfCards--
+  cards.push(card)
+  if (numberOfCards === 0) {
+    allComplete(cards)
+  }
+}
+
+var allComplete = function (cards) {
+  var data = ''
+  var todaysDate = new Date().toJSON().split('T')[0]
+  var filename = 'data/raw/' + todaysDate + '-transformation' + '.json'
+
+  cards.forEach(card => {
+    if (card !== '' && card !== undefined) {
+      data += JSON.stringify(card) + '\n'
+    }
+  })
+  fs.writeFile(filename, data, function (err) {
+    if (err) throw err
+    console.log('finished writing cards')
+  })
+}
+
 app.get('/transform', function (req, res) {
   /**
    * Read card lists and extract relevant data for each card
    */
   var fs = require('fs')
-  fs.readFile('data/raw/test-bad.txt', 'utf8', function (err, data) {
+  fs.readFile('data/raw/dominaria-creatures.txt', 'utf8', function (err, data) {
     if (err) throw err
     var cardlist = data.split('\n')
 
     console.log(cardlist)
 
-    var numberOfCards = cardlist.length
-    var cards = []
+    setNumberOfCards(cardlist.length)
 
-    var isDone = function (card) {
-      numberOfCards--
-      cards.push(card)
-      if (numberOfCards === 0) {
-        allComplete(cards)
-      }
-    }
-
-    var allComplete = function (cards) {
-      var data = ''
-      var todaysDate = new Date().toJSON().split('T')[0]
-      var filename = 'data/raw/' + todaysDate + '-transformation' + '.json'
-
-      cards.forEach(card => {
-        if (card !== '' && card !== undefined) {
-          data += JSON.stringify(card) + '\n'
-        }
-      })
-      fs.writeFile(filename, data, function (err) {
-        if (err) throw err
-        console.log('finished writing cards')
-      })
-    }
+    var baseUrl = 'https://api.scryfall.com/cards/named?exact='
 
     for (var i = 0; i < cardlist.length; i++) {
-      var baseUrl = 'https://api.scryfall.com/cards/named?exact='
       var cardUrl = cardlist[i].toLowerCase()
       if (cardUrl.indexOf(' ') !== -1) {
         cardUrl = cardUrl.replace(' ', '+')
       }
 
       var url = baseUrl + cardUrl
-
-      console.log(url)
-
-      request(url, function (error, response, html) {
-        if (!error) {
-          // console.log('html: ' + html)
-          // console.log('response: ' + response)
-
-          var obj = JSON.parse(html)
-
-          var card = { title: '', cmc: '', mana_cost: '', power: '', toughness: '', colors: '', abillities: [] }
-          card.title = obj.name
-          card.cmc = obj.cmc
-          card.mana_cost = obj.mana_cost
-          card.power = obj.power
-          card.toughness = obj.toughness
-          if (obj.colors) {
-            card.colors = obj.colors.join()
-          } else {
-            card.colors = 'c'
-          }
-          if (obj.oracle_text) {
-            card.abillities = extractAbillities(obj.oracle_text)
-          }
-          console.log(card)
-
-          isDone(card)
-
-          // fs.readFile(filename, 'utf8', function (err, data) {
-          //   if (err) throw err
-          //   data = JSON.stringify(card) + '\n'
-          //   fs.writeFile('data/raw/' + card.title, data, function (err) {
-          //     if (err) throw err
-          //     console.log('complete')
-          //   })
-          // })
-        }
-      })
+      transformScryfallData(url, true)
     }
 
-    var output = '<h2>Transformation Done</h2>'
+    var output = '<h2>Batch transformation done. Check output file.</h2>'
     res.send(output)
   })
 })
@@ -245,13 +254,18 @@ var normalize = function (card) {
     default: colors = other
   }
 
-  var power = {'power': card.power * 0.1}
+  var power = {'power': Math.round(card.power) / 10}
 
-  var toughness = {'toughness': card.toughness * 0.1}
+  var toughness = {'toughness': Math.round(card.toughness) / 10}
 
-  var cmc = {'cmc': card.cmc * 0.1}
+  var cmc = {'cmc': Math.round(card.cmc) / 10}
 
-  var abillites = {'abillities': card.abillities.length * 0.1}
+  var abillites
+  if (card.abillities.length) {
+    abillites = {'abillities': Math.round(card.abillities.length) / 10}
+  } else {
+    abillites = {'abillities': 0}
+  }
 
   normalizedData = Object.assign(cmc, colors, power, toughness, abillites)
 
@@ -265,23 +279,39 @@ var extractAbillities = function (text) {
     var abillity = 'special'
     rule = rule.toLowerCase().trim()
 
-    if (rule.indexOf('flying') !== -1) {
+    // Remove explanations
+    if (rule.indexOf('(') !== -1) {
+      rule = rule.replace(/ *\([^)]*\) */g, '').trim()
+    }
+
+    // Hard match
+    if (rule === 'flying') {
       abillity = 'flying'
     }
+    if (rule === 'haste') {
+      abillity = 'haste'
+    }
+    if (rule === 'hexproof') {
+      abillity = 'hexproof'
+    }
+    if (rule === 'delve') {
+      abillity = 'delve'
+    }
+    if (rule === 'first strike') {
+      abillity = 'firststrike'
+    }
+    if (rule === 'reach') {
+      abillity = 'reach'
+    }
+    // Soft match
     if (rule.indexOf('draw') !== -1) {
       abillity = 'draw'
     }
-    if (rule.indexOf('affinity') !== -1) {
+    if (rule.indexOf('affinity') !== -1 || rule.indexOf('this spell costs {1} less to cast') !== -1) {
       abillity = 'affinity'
     }
     if (rule.indexOf('monarch') !== -1) {
       abillity = 'monarch'
-    }
-    if (rule.indexOf('haste') !== -1) {
-      abillity = 'haste'
-    }
-    if (rule.indexOf('hexproof') !== -1) {
-      abillity = 'hexproof'
     }
     if (rule.indexOf('protection') !== -1) {
       abillity = 'protection'
@@ -289,12 +319,10 @@ var extractAbillities = function (text) {
     if (rule.indexOf('evoke') !== -1) {
       abillity = 'evoke'
     }
-    if (rule.indexOf('delve') !== -1) {
-      abillity = 'delve'
-    }
     if (rule.indexOf('metalcraft') !== -1) {
       abillity = 'metalcraft'
     }
+
     abillities.push(abillity)
   })
 
@@ -306,7 +334,7 @@ app.get('/normalize', function (req, res) {
    * Read card json and normalize the data to be read by brain.js
    */
   var fs = require('fs')
-  fs.readFile('data/raw/2018-04-18-transformation.json', 'utf8', function (err, data) {
+  fs.readFile('data/raw/2018-04-19-transformation.json', 'utf8', function (err, data) {
     if (err) throw err
     var cardlist = data.split('\n')
     var output = '<h2>Normalization done</h2>'
@@ -319,6 +347,22 @@ app.get('/normalize', function (req, res) {
     })
     res.send(output)
   })
+})
+
+app.get('/card', function (req, res) {
+  res.sendFile(path.join(__dirname, '/form.html'))
+})
+
+app.post('/card', function (req, res) {
+  var baseUrl = 'https://api.scryfall.com/cards/named?exact='
+  var name = req.body.name
+
+  var cardUrl = name.toLowerCase()
+  if (cardUrl.indexOf(' ') !== -1) {
+    cardUrl = cardUrl.replace(' ', '+')
+  }
+  var url = baseUrl + cardUrl
+  transformScryfallData(url, false, req, res)
 })
 
 app.listen('8081')
