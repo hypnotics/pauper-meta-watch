@@ -365,7 +365,7 @@ app.post('/card', function (req, res) {
   transformScryfallData(url, false, req, res)
 })
 
-app.listen('8081')
-console.log('Magic happens on port 8081')
+app.listen('80')
+console.log('Magic happens on port 80')
 exports = module.exports = app
 
