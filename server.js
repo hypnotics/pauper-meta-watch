@@ -8,6 +8,70 @@ const bodyParser = require('body-parser')
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
+app.get('/edhrec', function (req, res) {
+  /**
+  *  EDHREC
+  **/
+
+  var getCards = function (link, cb) {
+    request(link, function (error, response, html) {
+      if (!error) {
+        var $ = cheerio.load(html)
+        var decklist, title, meta
+        $('#deck_input_deck').filter(function () {
+          var deck = $(this)
+          decklist = deck.attr('value')
+        })
+        $('.deck-view-title').filter(function () {
+          var data = $(this)
+          title = data.first().text().split('Suggest')[0].trim()
+        })
+        $('.deck-view-title-bar').next().filter(function () {
+          var data = $(this)
+          meta = data.text().trim()
+        })
+        cb(link, meta, title, decklist)
+      }
+    })
+  }
+
+  var cb = function (link, meta, title, decklist) {
+    var deck = { title: '', link: '', decklist: '', meta: '' }
+    deck.link = link
+    deck.title = title
+    deck.decklist = decklist
+    deck.meta = meta
+    var todaysDate = new Date().toJSON().split('T')[0]
+    var filename = 'decks/' + todaysDate + '-' + title + '-' + uuid() + '.json'
+
+    fs.writeFile(filename, JSON.stringify(deck, null, 4), function (err) {
+      if (err) {
+        console.log('Error: ' + err)
+      }
+      console.log(filename + ' successfully written!')
+    })
+  }
+
+  var url = 'https://edhrec.com/commanders/gonti-lord-of-luxury'
+  var card = req.url
+
+  request(url, function (error, response, html) {
+    if (!error) {
+      //var $ = cheerio.load(html)
+
+      // $('.archetype-tile').filter(function () {
+      //   var data = $(this)
+      //   var link = 'https://www.mtggoldfish.com/archetype/' + data.attr('id')
+      //   getDecklist(link, cb)
+      // })
+    }
+    res.send('Thanks babe!' + card)
+  })
+})
+
+
+
+
 app.get('/scrape', function (req, res) {
   /**
   *  Main page
